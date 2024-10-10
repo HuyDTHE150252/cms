@@ -20,7 +20,7 @@ imageSourceUrl = 'https://'+ app.config['BLOB_ACCOUNT']  + '.blob.core.windows.n
 @app.route('/home')
 @login_required
 def home():
-    LOG.info('Login sucessfully')
+    app.logger.info('Login sucessfully')
     user = User.query.filter_by(username=current_user.username).first_or_404()
     posts = Post.query.all()
     return render_template(
@@ -62,7 +62,7 @@ def post(id):
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    LOG.critical("Go to login page")
+    app.logger.critical("Go to login page")
     if current_user.is_authenticated:
         return redirect(url_for('home'))
     form = LoginForm()
@@ -70,7 +70,7 @@ def login():
         user = User.query.filter_by(username=form.username.data).first()
         if user is None or not user.check_password(form.password.data):
             flash('Invalid username or password')
-            LOG.critical("Invalid username or password")
+            app.logger.critical("Invalid username or password")
             return redirect(url_for('login'))
         login_user(user, remember=form.remember_me.data)
         next_page = request.args.get('next')
@@ -97,7 +97,7 @@ def authorized():
                 scopes=Config.SCOPE,
                 redirect_uri=url_for('authorized', _external=True, _scheme='https'))
         if "error" in result:
-            LOG.info('Invalid login attempt')
+            app.logger.info('Invalid login attempt')
             return render_template("auth_error.html", result=result)
         session["user"] = result.get("id_token_claims")
         # Note: In a real app, we'd use the 'name' property from session["user"] below
